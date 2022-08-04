@@ -17,10 +17,13 @@ services:
   gateway:
     image: traefik:v2.0.7
     ports:
-      - "8080:8080" # HTTP exposed
-      - "8081:8081" # HTTP Administration exposed
+      - "9090:8080" # HTTP exposed
+      - "9091:8081" # HTTP Administration exposed
+      - "443:443"   # TLS/SSL
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/traefik/dynamic/certs-traefik.yaml:/etc/traefik/dynamic/certs-traefik.yaml
+      - ./data/certs/traefik:/etc/certs/
     command:
       - --providers.docker=true
       - --providers.docker.constraints=Label(`traefik.expose`, `true`)
@@ -28,6 +31,9 @@ services:
       - --entrypoints.traefik.address=:8081
       - --api.dashboard=true
       - --api.insecure=true
+      # TLS/SSL
+      - --providers.file.directory=/etc/traefik/dynamic
+      - --entrypoints.websecure.address=:443
     restart: always
 
   elasticsearch:
@@ -206,6 +212,7 @@ services:
       - "traefik.http.services.uat.loadbalancer.server.port=9999"
       - "traefik.http.services.uat.loadbalancer.server.scheme=http"
       - "traefik.expose=true"
+      - "traefik.http.routers.uat.tls=true"
     restart: always
     depends_on:
       postgres:
@@ -225,6 +232,7 @@ services:
         - "traefik.http.services.index.loadbalancer.server.port=8080"
         - "traefik.http.services.index.loadbalancer.server.scheme=http"
         - "traefik.expose=true"
+        - "traefik.http.routers.index.tls=true"
     restart: always
 
   api:
@@ -262,6 +270,7 @@ services:
       - "traefik.http.services.api.loadbalancer.server.port=8585"
       - "traefik.http.services.api.loadbalancer.server.scheme=http"
       - "traefik.expose=true"
+      - "traefik.http.routers.api.tls=true"
     restart: always
     
   jobs:
@@ -318,6 +327,7 @@ services:
       - "traefik.http.services.ui.loadbalancer.server.port=8080"
       - "traefik.http.services.ui.loadbalancer.server.scheme=http"
       - "traefik.expose=true"
+      - "traefik.http.routers.ui.tls=true"
     restart: always
 
   minio:
