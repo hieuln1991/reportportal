@@ -34,6 +34,7 @@ services:
       # TLS/SSL
       - --providers.file.directory=/etc/traefik/dynamic
       - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.http.tls.domains[0].main=rp.soundone-dev.o-cloud.net
     restart: always
 
   elasticsearch:
